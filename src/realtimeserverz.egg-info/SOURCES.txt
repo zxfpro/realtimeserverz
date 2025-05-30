@@ -2,7 +2,9 @@ README.md
 pyproject.toml
 src/realtimeserverz/__init__.py
 src/realtimeserverz/__main__.py
+src/realtimeserverz/server.py
 src/realtimeserverz.egg-info/PKG-INFO
 src/realtimeserverz.egg-info/SOURCES.txt
 src/realtimeserverz.egg-info/dependency_links.txt
+src/realtimeserverz.egg-info/requires.txt
 src/realtimeserverz.egg-info/top_level.txt

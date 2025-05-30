@@ -1,7 +1,11 @@
 [project]
 name = "realtimeserverz"
 version = "0.1.1"
-description = "Add your description here"
+description = "A custom server providing OpenAI-like realtime services"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "websockets",
+    "pydub",
+    "websocket-client>=1.8.0",
+]

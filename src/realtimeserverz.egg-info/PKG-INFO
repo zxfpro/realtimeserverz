@@ -1,6 +1,183 @@
 Metadata-Version: 2.4
 Name: realtimeserverz
 Version: 0.1.1
-Summary: Add your description here
+Summary: A custom server providing OpenAI-like realtime services
 Requires-Python: >=3.13
 Description-Content-Type: text/markdown
+Requires-Dist: websockets
+Requires-Dist: pydub
+
+# RealtimeServerZ
+
+一个模拟OpenAI实时API的WebSocket服务器，用于开发和测试需要实时API的应用程序。
+
+## 功能特点
+
+- 提供与OpenAI实时API类似的WebSocket接口
+- 支持文本消息的发送和接收
+- 支持音频数据的请求和发送
+- 支持API密钥验证
+- 支持模型参数
+
+## 安装
+
+确保你已经安装了Python 3.13或更高版本，然后安装依赖项：
+
+```bash
+# 使用uv安装依赖项
+uv add websockets pydub
+```
+
+## 使用方法
+
+### 启动服务器
+
+```bash
+# 使用默认配置启动服务器
+python main.py
+
+# 指定主机和端口
+python main.py --host 0.0.0.0 --port 8765
+
+# 指定API密钥
+python main.py --api-key your-api-key
+
+# 启用调试日志
+python main.py --debug
+```
+
+### 使用示例客户端
+
+项目提供了两个示例客户端：
+
+1. 交互式客户端：
+
+```bash
+python examples/client.py
+```
+
+2. OpenAI风格的客户端：
+
+```bash
+python examples/openai_style_client.py
+```
+
+你可以指定服务器主机和端口：
+
+```bash
+python examples/client.py --host localhost --port 8765
+```
+
+## 客户端API
+
+### 连接到服务器
+
+```python
+import websocket
+
+url = "ws://localhost:8765?model=gpt-4o-realtime-preview"
+headers = [
+    "Authorization: Bearer your-api-key",
+    "OpenAI-Beta: realtime=v1"
+]
+
+ws = websocket.WebSocketApp(
+    url,
+    header=headers,
+    on_open=on_open,
+    on_message=on_message,
+)
+
+ws.run_forever()
+```
+
+### 发送消息
+
+```python
+import json
+
+# 发送文本消息
+message = {
+    "type": "message",
+    "content": "你好，这是一条测试消息"
+}
+ws.send(json.dumps(message))
+
+# 请求音频
+message = {
+    "type": "audio_request"
+}
+ws.send(json.dumps(message))
+```
+
+### 接收消息
+
+服务器会发送以下类型的消息：
+
+- `connected`: 连接成功
+- `text`: 文本响应
+- `audio`: 音频数据
+- `error`: 错误信息
+- `info`: 信息提示
+- `processing`: 处理状态
+
+示例：
+
+```python
+def on_message(ws, message):
+    data = json.loads(message)
+    
+    if data.get("type") == "text":
+        print(f"收到文本: {data.get('content')}")
+    
+    elif data.get("type") == "audio":
+        # 处理音频数据
+        audio_format = data.get("format", "mp3")
+        audio_data = base64.b64decode(data.get("data", ""))
+        
+        with open(f"received_audio.{audio_format}", "wb") as f:
+            f.write(audio_data)
+```
+
+## 开发
+
+### 项目结构
+
+```
+realtimeserverz/
+├── examples/               # 示例客户端
+│   ├── client.py           # 交互式客户端
+│   └── openai_style_client.py  # OpenAI风格的客户端
+├── src/
+│   └── realtimeserverz/    # 主要代码
+│       ├── __init__.py     # 包初始化
+│       ├── __main__.py     # 命令行入口点
+│       └── server.py       # WebSocket服务器实现
+├── 11.mp3                  # 示例音频文件
+├── main.py                 # 主入口点
+├── pyproject.toml          # 项目配置
+└── README.md               # 项目说明
+```
+
+### 自定义服务器
+
+你可以通过继承`RealtimeServer`类来自定义服务器的行为：
+
+```python
+from realtimeserverz import RealtimeServer
+
+class MyCustomServer(RealtimeServer):
+    async def handle_message(self, websocket, data):
+        # 自定义消息处理逻辑
+        content = data.get("content", "")
+        
+        # 发送自定义响应
+        await websocket.send(json.dumps({
+            "type": "text",
+            "content": f"自定义响应: {content}"
+        }))
+```
+
+## 许可证
+
+MIT
